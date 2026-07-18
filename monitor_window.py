@@ -4,6 +4,7 @@ import sys
 import ctypes
 import os
 import winreg
+from i18n import I18n
 
 try:
     import win32gui
@@ -87,21 +88,22 @@ def set_window_icon(window):
 
 
 ITEMS = [
-    ("cpu_freq", "CPU频率", "GHz", "#00d4ff"),
-    ("cpu_temp", "CPU温度", "°C", "#ff6b6b"),
-    ("gpu_freq", "GPU频率", "GHz", "#a29bfe"),
-    ("gpu_temp", "GPU温度", "°C", "#ff6b6b"),
-    ("vram", "显存占用", "", "#fdcb6e"),
-    ("memory", "内存占用", "", "#55efc4"),
+    ("cpu_freq", "", "GHz", "#00d4ff"),
+    ("cpu_temp", "", "°C", "#ff6b6b"),
+    ("gpu_freq", "", "GHz", "#a29bfe"),
+    ("gpu_temp", "", "°C", "#ff6b6b"),
+    ("vram", "", "", "#fdcb6e"),
+    ("memory", "", "", "#55efc4"),
 ]
 
 
 class SettingsWindow(Toplevel):
-    def __init__(self, parent, config, on_apply):
+    def __init__(self, parent, config, on_apply, i18n_obj):
         super().__init__(parent)
         self.config_obj = config
         self.on_apply = on_apply
-        self.title(f"{APP_DISPLAY_NAME} - 设置")
+        self.i18n = i18n_obj
+        self.title(f"{self.i18n.t('app_name')} - {self.i18n.t('settings')}")
         self.resizable(False, False)
         self._init_vars()
         self._init_ui()
@@ -125,28 +127,34 @@ class SettingsWindow(Toplevel):
         self.cb_vram_percent = IntVar(value=int(self.config_obj.get("vram_show_percent")))
         self.cb_memory_percent = IntVar(value=int(self.config_obj.get("memory_show_percent")))
         self.cb_auto_start = IntVar(value=int(get_auto_start()))
+        self.language_var = StringVar(value=self.config_obj.get("language", "auto"))
 
     def _init_ui(self):
         frm = ttk.Frame(self, padding=15)
         frm.grid(row=0, column=0, sticky="nsew")
 
         row = 0
-        ttk.Label(frm, text="显示模式:").grid(row=row, column=0, sticky="w", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('display_mode')}:").grid(row=row, column=0, sticky="w", pady=3)
         mode_frame = ttk.Frame(frm)
         mode_frame.grid(row=row, column=1, sticky="w", pady=3)
-        ttk.Radiobutton(mode_frame, text="角落小框", variable=self.mode_var, value="widget").pack(side="left", padx=5)
-        ttk.Radiobutton(mode_frame, text="顶部横条", variable=self.mode_var, value="bar").pack(side="left", padx=5)
+        ttk.Radiobutton(mode_frame, text=self.i18n.t('widget_mode'), variable=self.mode_var, value="widget").pack(side="left", padx=5)
+        ttk.Radiobutton(mode_frame, text=self.i18n.t('bar_mode'), variable=self.mode_var, value="bar").pack(side="left", padx=5)
         row += 1
 
-        ttk.Label(frm, text="小框位置:").grid(row=row, column=0, sticky="w", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('widget_position')}:").grid(row=row, column=0, sticky="w", pady=3)
         self.pos_combo = ttk.Combobox(frm, state="readonly", width=15)
-        self.pos_combo['values'] = ("右下角", "左下角", "右上角", "左上角")
+        self.pos_combo['values'] = (
+            self.i18n.t('bottom_right'),
+            self.i18n.t('bottom_left'),
+            self.i18n.t('top_right'),
+            self.i18n.t('top_left')
+        )
         pos_map = {"bottom_right": 0, "bottom_left": 1, "top_right": 2, "top_left": 3}
         self.pos_combo.current(pos_map.get(self.pos_var.get(), 0))
         self.pos_combo.grid(row=row, column=1, sticky="w", pady=3)
         row += 1
 
-        ttk.Label(frm, text="窗口透明度:").grid(row=row, column=0, sticky="w", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('window_opacity')}:").grid(row=row, column=0, sticky="w", pady=3)
         opacity_frame = ttk.Frame(frm)
         opacity_frame.grid(row=row, column=1, sticky="w", pady=3)
         self.opacity_scale = ttk.Scale(opacity_frame, from_=30, to=100, command=self._on_opacity_change, orient="horizontal", length=140)
@@ -156,7 +164,7 @@ class SettingsWindow(Toplevel):
         self.opacity_label.pack(side="left", padx=8)
         row += 1
 
-        ttk.Label(frm, text="背景透明度:").grid(row=row, column=0, sticky="w", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('bg_transparency')}:").grid(row=row, column=0, sticky="w", pady=3)
         bg_frame = ttk.Frame(frm)
         bg_frame.grid(row=row, column=1, sticky="w", pady=3)
         self.bg_scale = ttk.Scale(bg_frame, from_=0, to=100, variable=self.bg_transparency_var, orient="horizontal", length=140, command=self._on_bg_transparency_change)
@@ -165,7 +173,7 @@ class SettingsWindow(Toplevel):
         self.bg_label.pack(side="left", padx=8)
         row += 1
 
-        ttk.Label(frm, text="采样间隔:").grid(row=row, column=0, sticky="w", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('sampling_interval')}:").grid(row=row, column=0, sticky="w", pady=3)
         sample_frame = ttk.Frame(frm)
         sample_frame.grid(row=row, column=1, sticky="w", pady=3)
         self.sample_scale = ttk.Scale(sample_frame, from_=200, to=3000, variable=self.sample_var, orient="horizontal", length=140, command=self._on_sample_change)
@@ -174,7 +182,7 @@ class SettingsWindow(Toplevel):
         self.sample_label.pack(side="left", padx=8)
         row += 1
 
-        ttk.Label(frm, text="字号大小:").grid(row=row, column=0, sticky="w", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('font_size')}:").grid(row=row, column=0, sticky="w", pady=3)
         font_frame = ttk.Frame(frm)
         font_frame.grid(row=row, column=1, sticky="w", pady=3)
         self.font_scale = ttk.Scale(font_frame, from_=8, to=20, variable=self.font_size_var, orient="horizontal", length=140, command=self._on_font_size_change)
@@ -186,34 +194,47 @@ class SettingsWindow(Toplevel):
         ttk.Separator(frm, orient="horizontal").grid(row=row, column=0, columnspan=2, sticky="ew", pady=10)
         row += 1
 
-        ttk.Label(frm, text="显示指标:").grid(row=row, column=0, sticky="nw", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('show_items')}:").grid(row=row, column=0, sticky="nw", pady=3)
         checks_frame = ttk.Frame(frm)
         checks_frame.grid(row=row, column=1, sticky="w", pady=3)
-        Checkbutton(checks_frame, text="CPU频率", variable=self.cb_cpu_freq).pack(anchor="w")
-        Checkbutton(checks_frame, text="CPU温度", variable=self.cb_cpu_temp).pack(anchor="w")
-        Checkbutton(checks_frame, text="GPU频率", variable=self.cb_gpu_freq).pack(anchor="w")
-        Checkbutton(checks_frame, text="GPU温度", variable=self.cb_gpu_temp).pack(anchor="w")
-        Checkbutton(checks_frame, text="显存占用", variable=self.cb_vram).pack(anchor="w")
-        Checkbutton(checks_frame, text="内存占用", variable=self.cb_memory).pack(anchor="w")
+        Checkbutton(checks_frame, text=self.i18n.t('cpu_freq'), variable=self.cb_cpu_freq).pack(anchor="w")
+        Checkbutton(checks_frame, text=self.i18n.t('cpu_temp'), variable=self.cb_cpu_temp).pack(anchor="w")
+        Checkbutton(checks_frame, text=self.i18n.t('gpu_freq'), variable=self.cb_gpu_freq).pack(anchor="w")
+        Checkbutton(checks_frame, text=self.i18n.t('gpu_temp'), variable=self.cb_gpu_temp).pack(anchor="w")
+        Checkbutton(checks_frame, text=self.i18n.t('vram'), variable=self.cb_vram).pack(anchor="w")
+        Checkbutton(checks_frame, text=self.i18n.t('memory'), variable=self.cb_memory).pack(anchor="w")
         row += 1
 
         ttk.Separator(frm, orient="horizontal").grid(row=row, column=0, columnspan=2, sticky="ew", pady=10)
         row += 1
 
-        ttk.Label(frm, text="显示格式:").grid(row=row, column=0, sticky="nw", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('display_format')}:").grid(row=row, column=0, sticky="nw", pady=3)
         fmt_frame = ttk.Frame(frm)
         fmt_frame.grid(row=row, column=1, sticky="w", pady=3)
-        Checkbutton(fmt_frame, text="显存以百分比显示", variable=self.cb_vram_percent).pack(anchor="w")
-        Checkbutton(fmt_frame, text="内存以百分比显示", variable=self.cb_memory_percent).pack(anchor="w")
+        Checkbutton(fmt_frame, text=self.i18n.t('vram_percent'), variable=self.cb_vram_percent).pack(anchor="w")
+        Checkbutton(fmt_frame, text=self.i18n.t('memory_percent'), variable=self.cb_memory_percent).pack(anchor="w")
         row += 1
 
         ttk.Separator(frm, orient="horizontal").grid(row=row, column=0, columnspan=2, sticky="ew", pady=10)
         row += 1
 
-        ttk.Label(frm, text="其他选项:").grid(row=row, column=0, sticky="nw", pady=3)
+        ttk.Label(frm, text=f"{self.i18n.t('other_options')}:").grid(row=row, column=0, sticky="nw", pady=3)
         other_frame = ttk.Frame(frm)
         other_frame.grid(row=row, column=1, sticky="w", pady=3)
-        Checkbutton(other_frame, text="开机自启动", variable=self.cb_auto_start).pack(anchor="w")
+        Checkbutton(other_frame, text=self.i18n.t('auto_start'), variable=self.cb_auto_start).pack(anchor="w")
+        lang_frame = ttk.Frame(other_frame)
+        lang_frame.pack(anchor="w", pady=(5, 0))
+        ttk.Label(lang_frame, text=f"{self.i18n.t('language')}:").pack(side="left", padx=(0, 5))
+        self.lang_combo = ttk.Combobox(lang_frame, state="readonly", width=15)
+        languages = self.i18n.get_languages()
+        self.lang_combo['values'] = [name for _, name in languages]
+        self._lang_codes = [code for code, _ in languages]
+        current_lang = self.language_var.get()
+        if current_lang in self._lang_codes:
+            self.lang_combo.current(self._lang_codes.index(current_lang))
+        else:
+            self.lang_combo.current(0)
+        self.lang_combo.pack(side="left")
         row += 1
 
         ttk.Separator(frm, orient="horizontal").grid(row=row, column=0, columnspan=2, sticky="ew", pady=10)
@@ -221,13 +242,13 @@ class SettingsWindow(Toplevel):
 
         btn_frame = ttk.Frame(frm)
         btn_frame.grid(row=row, column=0, columnspan=2, sticky="ew")
-        ttk.Button(btn_frame, text="关于", command=self._show_about).pack(side="left", padx=5)
-        ttk.Button(btn_frame, text="确定", command=self._apply).pack(side="right", padx=5)
-        ttk.Button(btn_frame, text="取消", command=self.destroy).pack(side="right", padx=5)
+        ttk.Button(btn_frame, text=self.i18n.t('about'), command=self._show_about).pack(side="left", padx=5)
+        ttk.Button(btn_frame, text=self.i18n.t('ok'), command=self._apply).pack(side="right", padx=5)
+        ttk.Button(btn_frame, text=self.i18n.t('cancel'), command=self.destroy).pack(side="right", padx=5)
 
     def _show_about(self):
         about = Toplevel(self)
-        about.title(f"关于 {APP_DISPLAY_NAME}")
+        about.title(f"{self.i18n.t('about')} {self.i18n.t('app_name')}")
         about.resizable(False, False)
         set_window_icon(about)
         about.transient(self)
@@ -236,24 +257,24 @@ class SettingsWindow(Toplevel):
         frm = ttk.Frame(about, padding=20)
         frm.grid(row=0, column=0, sticky="nsew")
 
-        ttk.Label(frm, text=APP_DISPLAY_NAME, font=("Microsoft YaHei", 14, "bold")).grid(row=0, column=0, pady=(0, 5))
-        ttk.Label(frm, text=f"版本 {APP_VERSION}").grid(row=1, column=0, sticky="w", pady=2)
-        ttk.Label(frm, text=f"开发者：{APP_DEVELOPER}").grid(row=2, column=0, sticky="w", pady=2)
-        ttk.Label(frm, text="一款轻量级 Windows 硬件监控工具").grid(row=3, column=0, sticky="w", pady=2)
-        ttk.Label(frm, text="支持 CPU/GPU 频率温度、显存、内存监控").grid(row=4, column=0, sticky="w", pady=2)
-        ttk.Label(frm, text="基于 LibreHardwareMonitorLib 和 psutil").grid(row=5, column=0, sticky="w", pady=2)
+        ttk.Label(frm, text=self.i18n.t('app_name'), font=("Microsoft YaHei", 14, "bold")).grid(row=0, column=0, pady=(0, 5))
+        ttk.Label(frm, text=f"{self.i18n.t('version')} {APP_VERSION}").grid(row=1, column=0, sticky="w", pady=2)
+        ttk.Label(frm, text=f"{self.i18n.t('developer')}：{APP_DEVELOPER}").grid(row=2, column=0, sticky="w", pady=2)
+        ttk.Label(frm, text=self.i18n.t('about_description_1')).grid(row=3, column=0, sticky="w", pady=2)
+        ttk.Label(frm, text=self.i18n.t('about_description_2')).grid(row=4, column=0, sticky="w", pady=2)
+        ttk.Label(frm, text=self.i18n.t('about_description_3')).grid(row=5, column=0, sticky="w", pady=2)
 
         ttk.Separator(frm, orient="horizontal").grid(row=6, column=0, sticky="ew", pady=10)
-        ttk.Label(frm, text=f"开源协议：{APP_LICENSE}", font=("Microsoft YaHei", 9, "bold")).grid(row=7, column=0, sticky="w")
+        ttk.Label(frm, text=f"{self.i18n.t('license')}：{APP_LICENSE}", font=("Microsoft YaHei", 9, "bold")).grid(row=7, column=0, sticky="w")
         ttk.Label(frm, text=f"GitHub：{APP_GITHUB}", foreground="#0066cc").grid(row=8, column=0, sticky="w", pady=(2, 0))
 
         ttk.Separator(frm, orient="horizontal").grid(row=9, column=0, sticky="ew", pady=10)
-        ttk.Label(frm, text="快捷操作：", font=("Microsoft YaHei", 9, "bold")).grid(row=10, column=0, sticky="w")
-        ttk.Label(frm, text="• 左键拖动：移动窗口位置").grid(row=11, column=0, sticky="w")
-        ttk.Label(frm, text="• 右键菜单：切换模式 / 设置 / 退出").grid(row=12, column=0, sticky="w")
-        ttk.Label(frm, text="• 自动吸附屏幕边缘").grid(row=13, column=0, sticky="w")
+        ttk.Label(frm, text=f"{self.i18n.t('quick_actions')}：", font=("Microsoft YaHei", 9, "bold")).grid(row=10, column=0, sticky="w")
+        ttk.Label(frm, text=f"• {self.i18n.t('action_drag')}").grid(row=11, column=0, sticky="w")
+        ttk.Label(frm, text=f"• {self.i18n.t('action_right_click')}").grid(row=12, column=0, sticky="w")
+        ttk.Label(frm, text=f"• {self.i18n.t('action_snap')}").grid(row=13, column=0, sticky="w")
 
-        ttk.Button(frm, text="关闭", command=about.destroy).grid(row=14, column=0, pady=(15, 0))
+        ttk.Button(frm, text=self.i18n.t('close'), command=about.destroy).grid(row=14, column=0, pady=(15, 0))
 
         about.update_idletasks()
         about_w = about.winfo_reqwidth()
@@ -278,6 +299,9 @@ class SettingsWindow(Toplevel):
         pos_idx = self.pos_combo.current()
         pos_val = pos_list[pos_idx] if 0 <= pos_idx < len(pos_list) else "bottom_right"
 
+        lang_idx = self.lang_combo.current()
+        lang_val = self._lang_codes[lang_idx] if 0 <= lang_idx < len(self._lang_codes) else "zh-CN"
+
         self.config_obj.set("display_mode", self.mode_var.get())
         self.config_obj.set("widget_position", pos_val)
         self.config_obj.set("opacity", float(self.opacity_scale.get()) / 100.0)
@@ -293,6 +317,7 @@ class SettingsWindow(Toplevel):
         self.config_obj.set("show_memory", bool(self.cb_memory.get()))
         self.config_obj.set("vram_show_percent", bool(self.cb_vram_percent.get()))
         self.config_obj.set("memory_show_percent", bool(self.cb_memory_percent.get()))
+        self.config_obj.set("language", lang_val)
 
         auto_start_enabled = bool(self.cb_auto_start.get())
         self.config_obj.set("auto_start", auto_start_enabled)
@@ -308,6 +333,11 @@ class MonitorWindow:
     def __init__(self, monitor, config):
         self.monitor = monitor
         self.config = config
+        language_code = self.config.get("language", "auto")
+        if language_code == "auto":
+            self.i18n = I18n()
+        else:
+            self.i18n = I18n(language_code)
         self._drag_x = 0
         self._drag_y = 0
         self._is_dragging = False
@@ -317,7 +347,7 @@ class MonitorWindow:
 
     def _build_window(self):
         self.root = tk.Tk()
-        self.root.title(APP_DISPLAY_NAME)
+        self.root.title(self.i18n.t('app_name'))
 
         self._setup_window_icon()
         self._setup_window_style()
@@ -413,9 +443,18 @@ class MonitorWindow:
             "vram": self.config.get("show_vram"),
             "memory": self.config.get("show_memory"),
         }
-        visible = [item for item in ITEMS if show_map.get(item[0], True)]
+        label_map = {
+            "cpu_freq": self.i18n.t('cpu_freq_label'),
+            "cpu_temp": self.i18n.t('cpu_temp_label'),
+            "gpu_freq": self.i18n.t('gpu_freq_label'),
+            "gpu_temp": self.i18n.t('gpu_temp_label'),
+            "vram": self.i18n.t('vram_label'),
+            "memory": self.i18n.t('memory_label'),
+        }
+        visible = [(key, label_map.get(key, label), unit, color) for key, label, unit, color in ITEMS if show_map.get(key, True)]
         if not visible:
-            visible = [ITEMS[0]]
+            first_key, first_label, first_unit, first_color = ITEMS[0]
+            visible = [(first_key, label_map.get(first_key, first_label), first_unit, first_color)]
         return visible
 
     def _create_ui(self):
@@ -567,10 +606,10 @@ class MonitorWindow:
 
     def _setup_context_menu(self):
         self.menu = tk.Menu(self.root, tearoff=0)
-        self.menu.add_command(label="切换显示模式", command=self._toggle_mode)
-        self.menu.add_command(label="设置...", command=self._open_settings)
+        self.menu.add_command(label=self.i18n.t('menu_switch_mode'), command=self._toggle_mode)
+        self.menu.add_command(label=self.i18n.t('menu_settings'), command=self._open_settings)
         self.menu.add_separator()
-        self.menu.add_command(label="退出", command=self._quit)
+        self.menu.add_command(label=self.i18n.t('menu_exit'), command=self._quit)
 
         self._bind_event_recursive(self.root, "<Button-3>", self._show_menu)
 
@@ -621,9 +660,17 @@ class MonitorWindow:
         self._apply_config()
 
     def _open_settings(self):
-        SettingsWindow(self.root, self.config, self._apply_config)
+        SettingsWindow(self.root, self.config, self._apply_config, self.i18n)
 
     def _apply_config(self):
+        new_language = self.config.get("language", "auto")
+        if new_language == "auto":
+            self.i18n = I18n()
+        else:
+            self.i18n.set_language(new_language)
+
+        self.root.title(self.i18n.t('app_name'))
+
         opacity = self.config.get("opacity")
         self.root.attributes("-alpha", opacity)
 

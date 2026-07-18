@@ -28,6 +28,7 @@ DEFAULT_CONFIG = {
     "memory_show_percent": False,
     "refresh_interval_ms": 500,
     "sampling_interval_ms": 500,
+    "language": "auto",
     "auto_start": False,
 }
 
