@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.microsoft.com/packaging/2010/07/manifest" Target="/LibreHardwareMonitorLib.nuspec" Id="R489FC77621113E22" />
+  <Relationship Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="/package/services/metadata/core-properties/ab8257c519264280b1d430730028820d.psmdcp" Id="RAC5A79DC14FCDB52" />
+</Relationships>

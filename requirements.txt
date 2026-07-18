@@ -1,0 +1,4 @@
+psutil>=5.9.0
+nvidia-ml-py>=11.450.129
+wmi>=1.5.1
+pywin32>=305
