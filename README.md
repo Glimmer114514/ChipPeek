@@ -1,8 +1,8 @@
-# ChipView
+# ChipPeek
 
 一款轻量级 Windows 硬件监控悬浮窗工具。支持 CPU/GPU 频率、温度、显存、内存占用实时监控，以悬浮窗形式常驻桌面，支持全屏置顶显示。
 
-![ChipView](app.png)
+![ChipPeek](app.png)
 
 ## ✨ 功能特性
 
@@ -21,14 +21,14 @@
 
 ### 直接使用
 
-下载 `硬件监控.exe`，右键以管理员身份运行（CPU 温度和精确频率需要管理员权限读取 MSR 寄存器）。
+下载 `ChipPeek.exe`，右键以管理员身份运行（CPU 温度和精确频率需要管理员权限读取 MSR 寄存器）。
 
 ### 源码运行
 
 ```bash
 # 克隆项目
-git clone https://github.com/Glimmer114514/ChipView.git
-cd ChipView
+git clone https://github.com/Glimmer114514/ChipPeek.git
+cd ChipPeek
 
 # 安装依赖
 pip install -r requirements.txt
@@ -47,10 +47,10 @@ python main.py
 
 ```bash
 pip install pyinstaller
-pyinstaller --noconfirm --onefile --windowed --name "ChipView" --icon "app.ico" --manifest "admin.manifest" --add-data "libs;libs" --add-data "app.ico;." --hidden-import "clr" --hidden-import "pynvml" --hidden-import "win32gui" --hidden-import "win32con" main.py
+pyinstaller --noconfirm --onefile --windowed --name "ChipPeek" --icon "app.ico" --manifest "admin.manifest" --add-data "libs;libs" --add-data "app.ico;." --hidden-import "clr" --hidden-import "pynvml" --hidden-import "win32gui" --hidden-import "win32con" main.py
 ```
 
-打包完成后，EXE 文件位于 `dist/ChipView.exe`。
+打包完成后，EXE 文件位于 `dist/ChipPeek.exe`。
 
 ## 🎮 使用说明
 
@@ -92,7 +92,7 @@ pyinstaller --noconfirm --onefile --windowed --name "ChipView" --icon "app.ico" 
 ## 📁 项目结构
 
 ```
-ChipView/
+ChipPeek/
 ├── main.py                  # 程序入口
 ├── monitor_window.py        # 窗口 UI 与交互逻辑
 ├── hardware_monitor.py      # 硬件数据采集
@@ -106,7 +106,7 @@ ChipView/
 │   └── lhm/
 │       └── lib/net472/      # LibreHardwareMonitorLib DLL
 └── dist/
-    └── ChipView.exe         # 编译后的可执行文件
+    └── ChipPeek.exe         # 编译后的可执行文件
 ```
 
 ## 📝 配置文件
@@ -122,7 +122,7 @@ ChipView/
 **R41NH4RD**
 
 - GitHub: [@R41NH4RD](https://github.com/Glimmer114514)
-- 项目地址: [https://github.com/Glimmer114514/ChipView](https://github.com/Glimmer114514/ChipView)
+- 项目地址: [https://github.com/Glimmer114514/ChipPeek](https://github.com/Glimmer114514/ChipPeek)
 
 ## 🙏 致谢
 

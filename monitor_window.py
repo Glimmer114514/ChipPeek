@@ -13,11 +13,11 @@ except ImportError:
     HAS_WIN32 = False
 
 
-APP_NAME = "ChipView"
-APP_DISPLAY_NAME = "ChipView 硬件监控"
+APP_NAME = "ChipPeek"
+APP_DISPLAY_NAME = "ChipPeek 硬件监控"
 APP_VERSION = "1.0.0"
 APP_DEVELOPER = "R41NH4RD"
-APP_GITHUB = "https://github.com/Glimmer114514/ChipView"
+APP_GITHUB = "https://github.com/Glimmer114514/ChipPeek"
 APP_LICENSE = "MIT License"
 
 
