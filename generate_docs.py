@@ -6857,18 +6857,18 @@ LANGUAGE_NAMES = {
 }
 
 
-def generate_nav_links(current_lang):
+def generate_nav_links(current_lang, prefix=""):
     """生成语言切换导航链接"""
     links = []
     for code, name in LANGUAGE_NAMES.items():
         if code == current_lang:
             links.append(f"**{name}**")
         else:
-            links.append(f"[{name}](README_{code}.md)")
+            links.append(f"[{name}]({prefix}README_{code}.md)")
     return " | ".join(links)
 
 
-def render_readme(lang, data):
+def render_readme(lang, data, nav_prefix=""):
     """渲染单语言README"""
     lines = []
 
@@ -6879,7 +6879,7 @@ def render_readme(lang, data):
     lines.append("")
 
     # 语言导航
-    lines.append(f"> **{data['nav_label']}**: {generate_nav_links(lang)}")
+    lines.append(f"> **{data['nav_label']}**: {generate_nav_links(lang, nav_prefix)}")
     lines.append("")
 
     # 功能特性
@@ -7001,8 +7001,8 @@ def main():
             f.write(content)
         print(f"生成 README_{lang}.md")
 
-    # 将英文版作为主 README（放在根目录）
-    en_content = render_readme("en", READMES["en"])
+    # 将英文版作为主 README（放在根目录），导航链接加 docs/ 前缀
+    en_content = render_readme("en", READMES["en"], nav_prefix="docs/")
     root_readme = os.path.join(os.path.dirname(os.path.abspath(__file__)), "README.md")
     with open(root_readme, 'w', encoding='utf-8') as f:
         f.write(en_content)
