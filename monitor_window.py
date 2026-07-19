@@ -127,7 +127,8 @@ class SettingsWindow(Toplevel):
         self.cb_vram_percent = IntVar(value=int(self.config_obj.get("vram_show_percent")))
         self.cb_memory_percent = IntVar(value=int(self.config_obj.get("memory_show_percent")))
         self.cb_auto_start = IntVar(value=int(get_auto_start()))
-        self.language_var = StringVar(value=self.config_obj.get("language", "auto"))
+        lang_val = self.config_obj.get("language")
+        self.language_var = StringVar(value=lang_val if lang_val else "auto")
 
     def _init_ui(self):
         frm = ttk.Frame(self, padding=15)
@@ -157,10 +158,12 @@ class SettingsWindow(Toplevel):
         ttk.Label(frm, text=f"{self.i18n.t('window_opacity')}:").grid(row=row, column=0, sticky="w", pady=3)
         opacity_frame = ttk.Frame(frm)
         opacity_frame.grid(row=row, column=1, sticky="w", pady=3)
-        self.opacity_scale = ttk.Scale(opacity_frame, from_=30, to=100, command=self._on_opacity_change, orient="horizontal", length=140)
-        self.opacity_scale.set(self.opacity_var.get() * 100)
+        self.opacity_scale = ttk.Scale(opacity_frame, from_=0, to=100, command=self._on_opacity_change, orient="horizontal", length=140)
+        _transparency = int((1.0 - self.opacity_var.get()) / 0.85 * 100)
+        _transparency = max(0, min(100, _transparency))
+        self.opacity_scale.set(_transparency)
         self.opacity_scale.pack(side="left")
-        self.opacity_label = ttk.Label(opacity_frame, text=f"{int(self.opacity_var.get() * 100)}%", width=8)
+        self.opacity_label = ttk.Label(opacity_frame, text=f"{_transparency}%", width=8)
         self.opacity_label.pack(side="left", padx=8)
         row += 1
 
@@ -304,7 +307,9 @@ class SettingsWindow(Toplevel):
 
         self.config_obj.set("display_mode", self.mode_var.get())
         self.config_obj.set("widget_position", pos_val)
-        self.config_obj.set("opacity", float(self.opacity_scale.get()) / 100.0)
+        _trans_val = float(self.opacity_scale.get())
+        _alpha = max(0.15, 1.0 - _trans_val / 100.0 * 0.85)
+        self.config_obj.set("opacity", _alpha)
         self.config_obj.set("bg_transparency", int(self.bg_transparency_var.get()))
         self.config_obj.set("sampling_interval_ms", int(self.sample_var.get()))
         self.config_obj.set("refresh_interval_ms", int(self.sample_var.get()))
@@ -333,8 +338,8 @@ class MonitorWindow:
     def __init__(self, monitor, config):
         self.monitor = monitor
         self.config = config
-        language_code = self.config.get("language", "auto")
-        if language_code == "auto":
+        language_code = self.config.get("language")
+        if not language_code or language_code == "auto":
             self.i18n = I18n()
         else:
             self.i18n = I18n(language_code)
@@ -663,8 +668,8 @@ class MonitorWindow:
         SettingsWindow(self.root, self.config, self._apply_config, self.i18n)
 
     def _apply_config(self):
-        new_language = self.config.get("language", "auto")
-        if new_language == "auto":
+        new_language = self.config.get("language")
+        if not new_language or new_language == "auto":
             self.i18n = I18n()
         else:
             self.i18n.set_language(new_language)

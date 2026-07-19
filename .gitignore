@@ -8,6 +8,8 @@ __pycache__/
 *.egg
 dist/
 build/
+build_new/
+dist_new/
 *.spec
 
 # 虚拟环境
@@ -25,8 +27,17 @@ env/
 Thumbs.db
 .DS_Store
 
+# 日志和临时文件
+*.log
+*.tmp
+*.bak
+
 # 配置文件
 config.json
 
 # 生成的图标
 app.png
+
+# NuGet 包残留文件
+\[Content_Types].xml
+_rels/
