@@ -66,6 +66,22 @@ LANGUAGES = {
     "af": "Afrikaans",
     "am": "አማርኛ",
     "zu": "isiZulu",
+    "fil": "Filipino",
+    "ga": "Gaeilge",
+    "is": "Íslenska",
+    "mt": "Malti",
+    "cy": "Cymraeg",
+    "eu": "Euskara",
+    "gl": "Galego",
+    "ne": "नेपाली",
+    "si": "සිංහල",
+    "ka": "ქართული",
+    "hy": "Հայերեն",
+    "mk": "Македонски",
+    "be": "Беларуская",
+    "yi": "ייִדיש",
+    "lb": "Lëtzebuergesch",
+    "eo": "Esperanto",
 }
 
 
