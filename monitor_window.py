@@ -105,11 +105,11 @@ class SettingsWindow(Toplevel):
         self.i18n = i18n_obj
         self.title(f"{self.i18n.t('app_name')} - {self.i18n.t('settings')}")
         self.resizable(False, False)
-        self._init_vars()
-        self._init_ui()
         set_window_icon(self)
         self.transient(parent)
         self.grab_set()
+        self._init_vars()
+        self._init_ui()
 
     def _init_vars(self):
         self.mode_var = StringVar(value=self.config_obj.get("display_mode"))
@@ -158,12 +158,12 @@ class SettingsWindow(Toplevel):
         ttk.Label(frm, text=f"{self.i18n.t('window_opacity')}:").grid(row=row, column=0, sticky="w", pady=3)
         opacity_frame = ttk.Frame(frm)
         opacity_frame.grid(row=row, column=1, sticky="w", pady=3)
-        self.opacity_scale = ttk.Scale(opacity_frame, from_=0, to=100, command=self._on_opacity_change, orient="horizontal", length=140)
         _transparency = int((1.0 - self.opacity_var.get()) / 0.85 * 100)
         _transparency = max(0, min(100, _transparency))
+        self.opacity_label = ttk.Label(opacity_frame, text=f"{_transparency}%", width=8)
+        self.opacity_scale = ttk.Scale(opacity_frame, from_=0, to=100, command=self._on_opacity_change, orient="horizontal", length=140)
         self.opacity_scale.set(_transparency)
         self.opacity_scale.pack(side="left")
-        self.opacity_label = ttk.Label(opacity_frame, text=f"{_transparency}%", width=8)
         self.opacity_label.pack(side="left", padx=8)
         row += 1
 
@@ -328,8 +328,8 @@ class SettingsWindow(Toplevel):
         self.config_obj.set("auto_start", auto_start_enabled)
         set_auto_start(auto_start_enabled)
 
-        self.on_apply()
         self.destroy()
+        self.master.after(100, self.on_apply)
 
 
 class MonitorWindow:
